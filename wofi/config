@@ -1,0 +1,10 @@
+width=700
+height=500
+show=drun
+location=top
+allow_images=true
+allow_markup=true
+insensitive=true
+hide_scroll=true
+term=foot
+gtk_dark=true
