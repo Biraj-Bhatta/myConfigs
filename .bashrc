@@ -48,17 +48,17 @@ ex () {
   fi
 }
 
-pcc() {
-    if [ -z "$1" ]; then
-        echo "Usage: pcc filename"
-        return 1
-    elif [ ! -f "$1" ]; then
-        echo "File not found: $1"
-        return 1
-    fi
-    base="${1%.*}"
-    pandoc "$1" -o "$base.pdf" --pdf-engine=typst
-}
+# pcc() {
+#     if [ -z "$1" ]; then
+#         echo "Usage: pcc filename"
+#         return 1
+#     elif [ ! -f "$1" ]; then
+#         echo "File not found: $1"
+#         return 1
+#     fi
+#     base="${1%.*}"
+#     pandoc "$1" -o "$base.pdf" --pdf-engine=typst
+# }
 
 # Aliases
 alias ls='ls --color=always --group-directories-first'
@@ -72,8 +72,8 @@ alias sv="sudoedit "
 alias ka='killall '
 alias pac='sudo pacman '
 alias rm='rm -i'
-alias sphone='ssh -p 8022 u0_a169@192.168.1.33'
-alias mphone='sshfs u0_a169@192.168.1.33:storage /home/krishna/mnt/ -o follow_symlinks -p 8022'
+# alias sphone='ssh -p 8022 u0_a169@192.168.1.33'
+# alias mphone='sshfs u0_a169@192.168.1.33:storage /home/krishna/mnt/ -o follow_symlinks -p 8022'
 
 parse_git_branch() {
     git rev-parse --is-inside-work-tree &>/dev/null || return
@@ -90,5 +90,6 @@ parse_git_branch() {
 
     echo " [$branch$markers]"
 }
+
 
 export PS1='\[\e[1;33m\] 󰥳 \[\e[1;37m\] \w\[\e[0;32m\] $(parse_git_branch) \[\e[1;36m\]$\[\e[0;37m\] '
