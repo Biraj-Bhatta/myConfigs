@@ -6,9 +6,15 @@ general {
     color_degraded = "#ffff00"
     color_bad = "#ff0000"
 }
-
+order += "wireless _first_"
 order += "battery 1"
 order += "tztime local"
+
+wireless _first_ {
+    format_up = "📶 %essid (%quality)"
+    format_down = "📡 Disconnected"
+}
+
 
 battery 1 {
     format = "🔋 %percentage"
