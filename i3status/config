@@ -6,6 +6,7 @@ general {
     color_degraded = "#ffff00"
     color_bad = "#ff0000"
 }
+
 order += "wireless _first_"
 order += "battery 1"
 order += "tztime local"
@@ -29,6 +30,7 @@ battery 1 {
     status_bat = "🔋"
     status_full = "✓"
 }
+
 tztime local {
     format = "%Y-%m-%d %I:%M:%S %p"
 }
