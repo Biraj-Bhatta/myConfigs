@@ -18,11 +18,28 @@ set $term foot
 # Your preferred application launcher
 set $menu wmenu-run
 
-### Output configuration
-#
-# Default wallpaper (more resolutions are available in /usr/share/backgrounds/sway/)
-output * bg /usr/share/backgrounds/sway/Lord_of_Mystry.png fill
 
+
+
+
+### Output configuration
+
+
+# Wallpaper script path
+set $bg $HOME/.config/sway/scripts/wallpaper.sh
+
+# Toggle between the two folders (Super + /)
+bindsym $mod+KP_Divide exec $bg toggle
+
+# Loop through wallpapers in the current folder (Super + Numpad 6 / Numpad 4)
+bindsym $mod+KP_6 exec $bg next
+bindsym $mod+KP_4 exec $bg prev
+bindsym $mod+KP_Right exec $bg next
+bindsym $mod+KP_Left exec $bg prev
+
+
+# Restore the last wallpaper on Sway startup or reload
+exec_always $bg init
 
 
 input "type:keyboard" {
@@ -31,8 +48,11 @@ input "type:keyboard" {
 
 bindsym $mod+r exec ~/.config/sway/scripts/toggle-wofi.sh
 
-#Execute always
+####Execute always
 exec_always --no-startup-id dunst
+
+# Run battery monitor script in the background on startup
+exec ~/.config/sway/scripts/battery-notify.sh
 
 
 # Example configuration:
@@ -147,6 +167,14 @@ bindsym $mod+Shift+0 move container to workspace number 10
 # Note: workspaces can have any name you want, not just numbers.
 # We just use 1-10 as the default.
 #
+
+
+#SCREEN MIRRORING
+# bindsym $mod+p exec ~/.config/sway/scripts/mirror.sh
+# bindsym $mod+p exec sh -c 'echo -e "Yes\nNo" | wofi --dmenu --prompt "Mirror displays?" | grep -q Yes && ~/.config/sway/scripts/mirror.sh'
+
+
+#
 # Layout stuff:
 #
 # You can "split" the current object of your focus with
@@ -248,7 +276,7 @@ bindsym --locked XF86MonBrightnessUp exec brightnessctl set 5%+
 # Special key to take a screenshot with grim
 bindsym Print exec grim -g "$(slurp)" ~/Pictures/$(date +'%Y-%m-%d_%H-%M-%S').png
 
-default_border pixel 4
+default_border pixel 2
 # smart_gaps on
 # gaps inner 5
 # gaps outer 5
