@@ -274,9 +274,14 @@ bindsym --locked XF86MonBrightnessDown exec brightnessctl set 5%-
 bindsym --locked XF86MonBrightnessUp exec brightnessctl set 5%+
 
 # Special key to take a screenshot with grim
-bindsym Print exec grim -g "$(slurp)" ~/Pictures/$(date +'%Y-%m-%d_%H-%M-%S').png
+bindsym Print exec grim -g "$(slurp)" ~/Pictures/Screenshots/$(date +'%Y-%m-%d_%H-%M-%S').png
 
 default_border pixel 2
+
+# default_border none
+default_floating_border none
+# hide_edge_borders both
+
 # smart_gaps on
 # gaps inner 5
 # gaps outer 5
@@ -286,8 +291,8 @@ default_border pixel 2
 #
 # Read `man 5 sway-bar` for more information about this section.
 bar {
-    position top
-        font pango:monospace 12
+    position bottom
+        font pango:monospace 14
         status_command i3status
         mode hide
 
