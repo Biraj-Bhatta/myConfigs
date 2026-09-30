@@ -1,0 +1,244 @@
+;; ==================================================
+;;  DATA
+;; ==================================================
+(defpoll distro     :interval "1h"  `. /etc/os-release && echo "$NAME" | tr 'A-Z' 'a-z' | tr -d ' '`)
+(defpoll username   :interval "1h"  `whoami`)
+(defpoll kernel     :interval "1h"  `uname -r`)
+(defpoll uptime     :interval "1m"  `uptime -p | sed -E 's/^up //; s/ hours?/h/; s/ minutes?/m/; s/ days?/d/; s/ weeks?/w/; s/,//g'`)
+(defpoll packages   :interval "10m" `pacman -Qq | wc -l`)
+(defpoll wm         :interval "1h"  `printenv XDG_CURRENT_DESKTOP || echo sway`)
+
+;; Clock
+(defpoll clock_time :interval "5s"  `date '+%I:%M %p'`)
+(defpoll clock_date :interval "1m"  `date '+%A, %B %d, %Y'`)
+
+;; CPU temp in °C (change thermal_zone0 if it isn't your CPU sensor)
+(defpoll temp       :interval "3s"  `awk '{print int($1/1000)}' /sys/class/thermal/thermal_zone0/temp`)
+
+;; RAM in GB
+(defpoll ram_used   :interval "3s"  `free -m | awk '/Mem:/ {printf "%.1fG", $3/1024}'`)
+(defpoll ram_free   :interval "3s"  `free -m | awk '/Mem:/ {printf "%.1fG", $7/1024}'`)
+(defpoll ram_total  :interval "1m"  `free -m | awk '/Mem:/ {printf "%.1fG", $2/1024}'`)
+
+;; Root disk
+(defpoll disk_used  :interval "30s" `df -h --output=used  / | tail -1 | tr -d ' '`)
+(defpoll disk_free  :interval "30s" `df -h --output=avail / | tail -1 | tr -d ' '`)
+(defpoll disk_total :interval "5m"  `df -h --output=size  / | tail -1 | tr -d ' '`)
+
+;; Extra data for the rings
+(defpoll ram_pct    :interval "3s"  `free | awk '/Mem:/ {printf "%d", $3/$2*100}'`)
+(defpoll disk_pct   :interval "30s" `df --output=pcent / | tail -1 | tr -d ' %'`)
+(defpoll cpu_cores  :interval "1h"  `nproc`)
+(defpoll cpu_load   :interval "3s"  `cut -d' ' -f1 /proc/loadavg`)
+(defpoll cpu_ghz    :interval "3s"  `awk -F: '/cpu MHz/ {s+=$2; n++} END {if (n) printf "%.1f GHz", s/n/1000}' /proc/cpuinfo`)
+
+;; Media player (any MPRIS player via playerctl)
+(defpoll player_status :interval "1s" `playerctl status 2>/dev/null || echo "No player"`)
+(defpoll player_title  :interval "1s" `playerctl metadata title 2>/dev/null`)
+(defpoll player_artist :interval "1s" `playerctl metadata artist 2>/dev/null`)
+(defpoll player_pct    :interval "1s" `playerctl metadata --format '{{position}} {{mpris:length}}' 2>/dev/null | awk '{ if ($2 > 0) printf "%d", $1/$2*100; else print 0 } END { if (NR == 0) print 0 }'`)
+
+;; Volume / brightness in % (needs pactl + brightnessctl)
+(defpoll volume     :interval "1s"  `pactl get-sink-volume @DEFAULT_SINK@ | awk 'NR==1{gsub("%","",$5); print $5}'`)
+(defpoll brightness :interval "2s"  `brightnessctl -m | awk -F, '{gsub("%","",$4); print $4}'`)
+
+
+;; ==================================================
+;;  SMALL REUSABLE WIDGETS
+;; ==================================================
+
+;; One "icon key ........ value" line
+(defwidget info-row [icon k v]
+  (box :class "info-row" :space-evenly false :spacing 8
+    (label :class "info-icon" :text icon)
+    (label :class "info-k" :halign "start" :text k)
+    (label :class "info-v" :hexpand true :halign "end" :limit-width 14 :text v)))
+
+;; Big circular gauge: value inside, title + two detail lines underneath
+(defwidget ring [name icon title value text d1 d2 tip]
+  (box :class "ring-cell" :orientation "v" :space-evenly false :spacing 6
+       :halign "center" :valign "center"
+    (overlay :halign "center" :valign "center" :tooltip tip
+      (box :class "ring-size")
+      (circular-progress :class "ring ring-${name}"
+                         :value value
+                         :thickness 8
+                         :start-at 75
+                         :clockwise true)
+      (label :class "ring-text" :halign "center" :valign "center" :text text))
+    (box :class "ring-title" :space-evenly false :spacing 6 :halign "center"
+      (label :class "ring-icon ring-icon-${name}" :text icon)
+      (label :class "ring-title-text ring-icon-${name}" :text title))
+    (label :class "ring-d1" :text d1)
+    (label :class "ring-d2" :text d2)))
+
+;; Vertical slider with an icon under it
+(defwidget vslider [name icon value onchange]
+  (box :class "slider-col" :orientation "v" :space-evenly false :spacing 12
+       :valign "center"
+    (scale :class "vslider vslider-${name}"
+           :orientation "v"
+           :flipped true
+           :min 0
+           :max 100
+           :round-digits 0
+           :value value
+           :tooltip "${value}%"
+           :onchange onchange)
+    (label :class "slider-icon slider-icon-${name}" :text icon)))
+
+
+;; ==================================================
+;;  CARDS
+;; ==================================================
+
+;; 1) System info  (green + white text)
+(defwidget sysinfo []
+  (box :class "card sysinfo" :orientation "v" :space-evenly false :spacing 12
+    (box :class "card-head" :space-evenly false :spacing 8
+      (box :class "dot" :valign "center")
+      (label :class "card-title" :show-truncated false
+             :markup "<span letter_spacing='1800'>SYSTEM INFO</span>"))
+    (box :class "divider")
+    (image :class "distro-logo"
+           :path "${EWW_CONFIG_DIR}/images/arch.svg"
+           :image-width 150
+           :image-height 150)
+    (label :class "hostname" :text distro)
+    (box :class "info" :orientation "v" :spacing 8 :valign "end" :vexpand true
+      (info-row :icon "" :k "kernel" :v kernel)
+      (info-row :icon "" :k "uptime" :v uptime)
+      (info-row :icon ""   :k "pkgs"   :v packages)
+      (info-row :icon "󰍹"     :k "wm"     :v wm))))
+
+;; 2) Volume + brightness
+(defwidget sliders []
+  (box :class "card sliders" :orientation "h" :space-evenly false :spacing 14 :halign "center"
+    (vslider :name "vol"
+             :icon ""
+             :value volume
+             :onchange "pactl set-sink-volume @DEFAULT_SINK@ {}%")
+    (vslider :name "bri"
+             :icon "󰃟"
+             :value brightness
+             :onchange "brightnessctl set {}%")))
+
+;; 3) 2x2 gauges: cpu / ram / temp / disk
+(defwidget rings []
+  (box :class "card rings" :orientation "v" :space-evenly true :spacing 16
+    (box :space-evenly true
+      (ring :name "cpu" :icon "" :title "CPU"
+            :value {EWW_CPU.avg}
+            :text "${round(EWW_CPU.avg, 0)}%"
+            :d1 "${cpu_cores} cores"
+            :d2 "load ${cpu_load}"
+            :tip "CPU ${round(EWW_CPU.avg, 1)}% / ${cpu_cores} cores / ${cpu_ghz} / load ${cpu_load}")
+      (ring :name "ram" :icon "󰍛" :title "RAM"
+            :value ram_pct
+            :text "${ram_pct}%"
+            :d1 "${ram_used} / ${ram_total}"
+            :d2 "${ram_free} free"
+            :tip "${ram_used} used / ${ram_free} free / ${ram_total} total"))
+    (box :space-evenly true
+      (ring :name "temp" :icon "" :title "CPU TEMP"
+            :value temp
+            :text "${temp}°C"
+            :d1 {temp < 60 ? "running cool" : temp < 80 ? "getting warm" : "too hot!"}
+            :d2 cpu_ghz
+            :tip "CPU temperature ${temp}°C")
+      (ring :name "disk" :icon "󰋊" :title "DISK /"
+            :value disk_pct
+            :text "${disk_pct}%"
+            :d1 "${disk_used} / ${disk_total}"
+            :d2 "${disk_free} free"
+            :tip "/ : ${disk_used} used / ${disk_free} free / ${disk_total} total"))))
+
+;; Media controls: title, artist, progress bar, prev / play-pause / next
+(defwidget player []
+  (box :class "player" :orientation "v" :space-evenly false :spacing 6
+    (label :class "player-title"  :limit-width 20 :text {player_title ?: "Nothing playing"})
+    (label :class "player-artist" :limit-width 24 :text {player_artist ?: player_status})
+    (progress :class "player-bar" :orientation "h" :value player_pct)
+    (box :class "player-ctl" :space-evenly false :spacing 14 :halign "center"
+      (button :class "pbtn" :onclick "playerctl previous; eww poll player_title"
+        "")
+      (button :class "pbtn pbtn-main" :onclick "playerctl play-pause; eww poll player_status"
+        (label :text {player_status == "Playing" ? "" : ""}))
+      (button :class "pbtn" :onclick "playerctl next; eww poll player_title"
+        ""))))
+
+;; 4) Profile
+(defwidget profile []
+  (box :class "card profile" :orientation "v" :space-evenly false :spacing 12 :valign "center"
+    (overlay :halign "center"
+      (box :class "avatar"
+           :style "background-image: url('${EWW_CONFIG_DIR}/images/avatar.png');")
+      (box :class "avatar-ring"))
+    (label :class "username" :text username)
+    (box :class "divider profile-divider")
+    (player)))
+
+
+;; ==================================================
+;;  CLOCK
+;; ==================================================
+(defwidget clock []
+  (box :class "clock" :orientation "v" :space-evenly false :spacing 4 :halign "center"
+    (label :class "clock-time" :text clock_time)
+    (label :class "clock-date" :show-truncated false
+           :markup "<span letter_spacing='2500'>${clock_date}</span>")))
+
+
+;; ==================================================
+;;  WINDOWS
+;; ==================================================
+
+;; Everything, centered on screen.
+;; The close button floats above/right of the cards like in the reference.
+(defwidget dash []
+  (box :class "dash" :orientation "v" :space-evenly false :spacing 28
+       :halign "center" :valign "center"
+    (clock)
+    (box :class "stage" :orientation "h" :space-evenly false :halign "center"
+      (box :class "flank")
+      (box :orientation "v" :space-evenly false :spacing 12
+        (box :class "top-gap")
+        (box :class "row" :orientation "h" :space-evenly false :spacing 16
+          (sysinfo)
+          (sliders)
+          (rings)
+          (profile)))
+      (box :class "close-col" :orientation "v" :space-evenly false :valign "start"
+        (button :class "close-btn" :onclick "eww close dash backdrop; swaymsg mode default" "")))))
+
+;; Fullscreen tint layer. The blur itself comes from the compositor (SwayFX
+;; layer_effects on the "eww-backdrop" namespace). Click anywhere to close everything.
+(defwidget backdrop []
+  (eventbox :onclick "eww close dash backdrop; swaymsg mode default"
+    (box :class "backdrop")))
+
+(defwindow backdrop
+  :monitor 0
+  :geometry (geometry :x "0px"
+                      :y "0px"
+                      :width "100%"
+                      :height "100%"
+                      :anchor "center")
+  :stacking "fg"
+  :exclusive false
+  :focusable false
+  :namespace "eww-backdrop"
+  (backdrop))
+
+(defwindow dash
+  :monitor 0
+  :geometry (geometry :x "0px"
+                      :y "0px"
+                      :width "0px"
+                      :height "0px"
+                      :anchor "center")
+  :stacking "overlay"
+  :exclusive false
+  :focusable false
+  :namespace "eww-dash"
+  (dash))

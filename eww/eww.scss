@@ -1,0 +1,249 @@
+/* ==================================================
+   COLOR PALETTE: "Glass" (works on any wallpaper)
+   ================================================== */
+$card:          rgba(18, 19, 26, 0.85);     /* Card background (dark, translucent) */
+$card-border:   rgba(255, 255, 255, 0.22);  /* Card borders */
+$divider:       rgba(255, 255, 255, 0.20);  /* Divider line */
+$track:         rgba(255, 255, 255, 0.22);  /* Empty gauge / slider track */
+
+$text:          rgb(245, 247, 250);         /* Standard bright text */
+$text-muted:    rgb(200, 206, 218);         /* Captions */
+$text-dim:      rgb(160, 168, 184);         /* Small labels */
+
+$sys-green:     rgb(134, 239, 172);         /* System info: icons, title, keys */
+$sys-white:     rgb(255, 255, 255);         /* System info: values, hostname */
+
+$arch:          rgb(23, 147, 209);          /* Status dot (logo color lives in images/arch.svg) */
+$accent:        rgb(125, 211, 252);         /* Clock */
+$c-cpu:         rgb(232, 137, 74);          /* cpu ring */
+$c-ram:         rgb(198, 111, 156);         /* ram ring */
+$c-temp:        rgb(79, 179, 191);          /* temp ring */
+$c-disk:        rgb(181, 196, 78);          /* disk ring */
+$c-vol:         rgb(134, 179, 119);         /* volume slider */
+$c-bri:         rgb(250, 204, 110);         /* brightness slider */
+
+/* Layout knobs */
+$card-h:        380px;                      /* Height of every card */
+$radius:        24px;
+
+/* ==================================================
+   BASE
+   ================================================== */
+* {
+  all: unset;
+  font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", monospace;
+  font-size: 14px;
+  color: $text;
+}
+
+tooltip {
+  background-color: $card;
+  border: 1px solid $card-border;
+  border-radius: 8px;
+}
+tooltip label { padding: 5px 10px; font-size: 13px; }
+
+.dash { padding: 10px; }
+
+/* ==================================================
+   CARD (shared)
+   ================================================== */
+.card {
+  background-color: $card;
+  border: 1px solid $card-border;
+  border-radius: $radius;
+  padding: 20px 22px;
+  min-height: $card-h;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.divider {
+  min-height: 1px;
+  background-color: $divider;
+}
+
+/* ==================================================
+   1) SYSTEM INFO  (green + white)
+   ================================================== */
+.sysinfo { min-width: 230px; }
+
+.card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: $sys-green;
+}
+
+.dot {
+  min-width: 9px;
+  min-height: 9px;
+  border-radius: 99px;
+  background-color: $arch;
+  box-shadow: 0 0 6px rgba(23, 147, 209, 0.9);
+}
+
+.distro-logo { margin-top: 6px; }
+
+.hostname {
+  font-size: 17px;
+  font-weight: bold;
+  color: $sys-white;
+}
+
+.info-icon { font-size: 16px; color: $sys-green; min-width: 20px; }
+.info-k    { font-size: 14px; color: $sys-green; }
+.info-v    { font-size: 14px; font-weight: 600; color: $sys-white; }
+
+/* ==================================================
+   2) SLIDERS
+   ================================================== */
+.sliders { padding: 20px 18px; min-width: 54px; }
+
+.vslider trough {
+  min-width: 20px;
+  min-height: 270px;
+  background-color: $track;
+  border-radius: 6px;
+}
+.vslider highlight { border-radius: 6px; }
+.vslider-vol highlight { background-color: $c-vol; }
+.vslider-bri highlight { background-color: $c-bri; }
+
+/* hide the round knob, keep the filled bar */
+.vslider slider {
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+}
+
+.slider-icon { font-size: 18px; }
+.slider-icon-vol { color: $c-vol; }
+.slider-icon-bri { color: $c-bri; }
+
+/* ==================================================
+   3) RINGS
+   ================================================== */
+.rings { min-width: 280px; }
+
+.ring-size { min-width: 100px; min-height: 100px; }   /* ring diameter */
+.ring      { background-color: $track; }              /* empty part of the ring */
+.ring-cpu  { color: $c-cpu; }
+.ring-ram  { color: $c-ram; }
+.ring-temp { color: $c-temp; }
+.ring-disk { color: $c-disk; }
+
+.ring-text       { font-size: 22px; font-weight: bold; color: $text; }
+.ring-icon       { font-size: 16px; }
+.ring-title-text { font-size: 14px; font-weight: bold; }
+.ring-d1         { font-size: 14px; color: $text; }
+.ring-d2         { font-size: 13px; color: $text-muted; }
+
+.ring-icon-cpu  { color: $c-cpu; }
+.ring-icon-ram  { color: $c-ram; }
+.ring-icon-temp { color: $c-temp; }
+.ring-icon-disk { color: $c-disk; }
+
+/* ==================================================
+   4) PROFILE
+   ================================================== */
+.profile { min-width: 184px; }
+
+.avatar {
+  min-width: 144px;
+  min-height: 144px;
+  border-radius: 999px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+/* thin inner ring, like the reference */
+.avatar-ring {
+  margin: 13px;
+  border: 2px solid rgba(255, 236, 220, 0.75);
+  border-radius: 999px;
+}
+
+.username { font-size: 17px; font-weight: bold; }
+
+/* line between the name and the player */
+.profile-divider { margin: 6px 4px; }
+
+/* media player */
+.player-title  { font-size: 14px; font-weight: bold; color: $text; }
+.player-artist { font-size: 12px; color: $text-dim; }
+
+.player-bar trough {
+  min-height: 4px;
+  background-color: $track;
+  border-radius: 99px;
+}
+.player-bar progress {
+  min-height: 4px;
+  background-color: $accent;
+  border-radius: 99px;
+}
+
+.pbtn {
+  font-size: 16px;
+  color: $text-muted;
+  padding: 4px 10px;
+  border-radius: 10px;
+}
+.pbtn:hover { color: $text; background-color: rgba(255, 255, 255, 0.12); }
+
+.pbtn-main {
+  font-size: 20px;
+  color: $text;
+  padding: 6px 16px;
+  border-radius: 99px;
+  background-color: rgba(255, 255, 255, 0.10);
+}
+.pbtn-main label { font-size: 20px; }
+
+/* ==================================================
+   CLOSE BUTTON (floats above/right of the cards)
+   ================================================== */
+.flank     { min-width: 93px; }     /* 61px gap + 32px button, mirrored on the left to keep cards centered */
+.top-gap   { min-height: 32px; }
+.close-col { padding-left: 61px; }
+
+.close-btn {
+  min-width: 32px;
+  min-height: 32px;
+  font-size: 14px;
+  background-color: $card;
+  border: 1px solid $card-border;
+  border-radius: 8px;
+  color: $text-muted;
+}
+.close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.16);
+  color: $text;
+}
+
+/* ==================================================
+   CLOCK
+   ================================================== */
+.clock-time {
+  font-size: 72px;
+  font-weight: bold;
+  color: $accent;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55);
+}
+.clock-date {
+  font-size: 18px;
+  color: $text-muted;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
+}
+
+/* ==================================================
+   BACKDROP (fullscreen layer behind the dash)
+   The blur is done by the compositor; this is just a light tint.
+   Raise the last number for a darker screen.
+   ================================================== */
+.backdrop {
+  background-color: rgba(10, 11, 16, 0.35);
+}

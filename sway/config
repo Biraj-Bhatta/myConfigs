@@ -48,6 +48,19 @@ input "type:keyboard" {
 
 bindsym $mod+r exec ~/.config/sway/scripts/toggle-wofi.sh
 
+
+
+## eww scripts
+bindsym $mod+c mode "dash", exec eww open-many backdrop dash
+
+mode "dash" {
+    bindsym Escape mode "default", exec eww close dash backdrop
+    bindsym $mod+c mode "default", exec eww close dash backdrop
+}
+
+
+
+
 ####Execute always
 exec_always --no-startup-id dunst
 
