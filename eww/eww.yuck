@@ -9,7 +9,7 @@
 (defpoll wm         :interval "1h"  `printenv XDG_CURRENT_DESKTOP || echo sway`)
 
 ;; Clock
-(defpoll clock_time :interval "5s"  `date '+%I:%M %p'`)
+(defpoll clock_time :interval "1m"  `date '+%I:%M %p'`)
 (defpoll clock_date :interval "1m"  `date '+%A, %B %d, %Y'`)
 
 ;; CPU temp in °C (change thermal_zone0 if it isn't your CPU sensor)

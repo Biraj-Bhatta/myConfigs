@@ -7,6 +7,11 @@ DIR2="$HOME/.local/share/backgrounds/zun/"
 # File to track which directory and image you are currently on
 STATE_FILE="$HOME/.cache/sway_wallpaper_state"
 
+# Slideshow settings
+SLIDESHOW_INTERVAL=30
+SLIDESHOW_PID_FILE="${XDG_RUNTIME_DIR:-/tmp}/sway_wallpaper_slideshow.pid"
+SCRIPT="$(readlink -f "$0")"
+
 # Ensure bash reads file extensions case-insensitively and handles empty dirs gracefully
 shopt -s nullglob nocaseglob
 
@@ -28,18 +33,15 @@ save_state() {
 
 # Apply the wallpaper using swaymsg
 apply_wallpaper() {
-    # Grab all images in the active directory
     images=("$CURRENT_DIR"/*.{jpg,jpeg,png,webp})
     num_images=${#images[@]}
 
     if [[ $num_images -eq 0 ]]; then
         echo "No images found in $CURRENT_DIR"
-        # FIX: Save state so it remembers we toggled, even if empty!
         save_state
         exit 1
     fi
 
-    # Keep index within bounds if directory contents have changed
     if (( CURRENT_INDEX >= num_images )); then
         CURRENT_INDEX=0
     elif (( CURRENT_INDEX < 0 )); then
@@ -48,9 +50,27 @@ apply_wallpaper() {
 
     selected_image="${images[$CURRENT_INDEX]}"
 
-    # Apply using sway IPC
     swaymsg "output * bg \"$selected_image\" fill"
     save_state
+}
+
+# Is the slideshow loop currently running?
+slideshow_running() {
+    [[ -f "$SLIDESHOW_PID_FILE" ]] && kill -0 "$(cat "$SLIDESHOW_PID_FILE")" 2>/dev/null
+}
+
+# Start/stop the slideshow
+toggle_slideshow() {
+    if slideshow_running; then
+        # Kill the whole process group (loop + its sleep)
+        kill -- -"$(cat "$SLIDESHOW_PID_FILE")" 2>/dev/null
+        rm -f "$SLIDESHOW_PID_FILE"
+        command -v notify-send >/dev/null && notify-send "Wallpaper slideshow" "Stopped"
+    else
+        # setsid gives the loop its own process group so it can be killed cleanly
+        setsid -f "$SCRIPT" _loop >/dev/null 2>&1
+        command -v notify-send >/dev/null && notify-send "Wallpaper slideshow" "Started (every ${SLIDESHOW_INTERVAL}s)"
+    fi
 }
 
 read_state
@@ -83,11 +103,21 @@ case "$1" in
         fi
         ;;
     init)
-        # Just restore the last used wallpaper
         apply_wallpaper
         ;;
+    slideshow)
+        toggle_slideshow
+        ;;
+    _loop)
+        # Internal: the background loop started by "slideshow"
+        echo $$ > "$SLIDESHOW_PID_FILE"
+        while true; do
+            sleep "$SLIDESHOW_INTERVAL"
+            "$SCRIPT" next
+        done
+        ;;
     *)
-        echo "Usage: $0 {toggle|next|prev|init}"
+        echo "Usage: $0 {toggle|next|prev|init|slideshow}"
         exit 1
         ;;
 esac

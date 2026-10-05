@@ -1,4 +1,4 @@
-# Default config for sway
+# default config for sway
 #
 # Copy this to ~/.config/sway/config and edit it to your liking.
 #
@@ -29,7 +29,7 @@ set $menu wmenu-run
 set $bg $HOME/.config/sway/scripts/wallpaper.sh
 
 # Toggle between the two folders (Super + /)
-bindsym $mod+KP_Divide exec $bg toggle
+bindsym $mod+Shift+KP_Divide exec $bg toggle
 
 # Loop through wallpapers in the current folder (Super + Numpad 6 / Numpad 4)
 bindsym $mod+KP_6 exec $bg next
@@ -37,6 +37,8 @@ bindsym $mod+KP_4 exec $bg prev
 bindsym $mod+KP_Right exec $bg next
 bindsym $mod+KP_Left exec $bg prev
 
+
+bindsym $mod+Shift+w exec ~/.config/sway/scripts/wallpaper.sh slideshow
 
 # Restore the last wallpaper on Sway startup or reload
 exec_always $bg init
@@ -56,6 +58,7 @@ bindsym $mod+c mode "dash", exec eww open-many backdrop dash
 mode "dash" {
     bindsym Escape mode "default", exec eww close dash backdrop
     bindsym $mod+c mode "default", exec eww close dash backdrop
+    bindsym $mod+q mode "default", exec eww close dash backdrop
 }
 
 
