@@ -34,11 +34,13 @@ bindsym $mod+Shift+KP_Divide exec $bg toggle
 # Loop through wallpapers in the current folder (Super + Numpad 6 / Numpad 4)
 bindsym $mod+KP_6 exec $bg next
 bindsym $mod+KP_4 exec $bg prev
+
 bindsym $mod+KP_Right exec $bg next
 bindsym $mod+KP_Left exec $bg prev
 
+bindsym $mod+KP_5 exec $bg slideshow
+bindsym $mod+KP_Begin exec $bg slideshow
 
-bindsym $mod+Shift+w exec ~/.config/sway/scripts/wallpaper.sh slideshow
 
 # Restore the last wallpaper on Sway startup or reload
 exec_always $bg init
